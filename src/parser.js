@@ -36,6 +36,12 @@ function collectPosts(data, config) {
 	// this is passed into getPostContent() for the markdown conversion
 	const turndownService = translator.initTurndownService();
 
+	const authors = data.rss.channel[0].author.reduce((res, author) => {
+		res[author.author_login] = author.author_display_name[0]
+		return res
+	}, {})
+	console.log(authors)
+
 	const posts = getItemsOfType(data, 'post')
 		.filter(post => post.status[0] !== 'trash' && post.status[0] !== 'draft')
 		.map(post => ({
@@ -49,6 +55,7 @@ function collectPosts(data, config) {
 			frontmatter: {
 				title: getPostTitle(post),
 				slug: getPostSlug(post),
+				author: getPostAuthor(post, authors),
 				date: getPostDate(post)
 			},
 			content: translator.getPostContent(post, turndownService, config)
@@ -64,6 +71,10 @@ function getPostId(post) {
 
 function getPostSlug(post) {
 	return post.post_name[0];
+}
+
+function getPostAuthor(post, authors) {
+	return authors[post.creator[0]] || '';
 }
 
 function getPostCoverImageId(post) {
